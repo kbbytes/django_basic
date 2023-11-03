@@ -1,0 +1,30 @@
+{% extends "food/base.html" %}
+
+   {% block body %}
+    <div class="row row-cols-1 row-cols-md-5 g-4">
+        {% for item in item_list %}
+            <div class="col">
+                <div class="card" style="width: 18rem;">
+                    <img src="{{item.item_image}}" class="card-img-top" alt="{{ item.item_name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{item.item_name}}</h5>
+                        <p class="card-text">{{item.item_desc}}</p>
+                        <p class="card-text">Price {{item.item_price}} $</p>
+                        <div class="d-flex justify-content-end"> <!-- Use d-flex and justify-content-end -->
+                            <a href="{% url 'food:detail' item.id %}" class="btn btn-success">Detail</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+      
+      <!-- <ul>
+        
+        <li>
+            <a href="{% url 'food:detail' item.id %}"> {{item.id}} ---- {{item.item_name}}  </a>
+            <img src="">
+        </li>
+
+    </ul> -->
