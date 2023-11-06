@@ -2,10 +2,14 @@ from django.shortcuts import render, HttpResponse, redirect
 from .models import Item
 # from django.template import loader
 from .forms import ItemForm
+from .forms import NewUserForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
 
 
 def item(request):
-    return HttpResponse("<h1>Thsi is an item view</h1>")
+    return HttpResponse("<h1>This is an item view</h1>")
 
 
 def index(request):
@@ -25,23 +29,29 @@ def detail(request, item_id):
 
 
 def create_item(request):
-    form = ItemForm(request.POST or None)
+    if request.method == 'POST':
+        form = ItemForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('food:index')
+    else:
+        form = ItemForm()
 
-    if form.is_valid():
-        form.save()
-        return redirect('food:index')
-    return render(request, "food/item-form.html", {'form': form})
+    return render(request, 'food/item-form.html', {'form': form})
 
 
 def update_item(request, update_id):
     updateItem = Item.objects.get(id=update_id)
 
-    form = ItemForm(request.POST or None, instance=updateItem)
+    if request.method == 'POST':
+        form = ItemForm(request.POST, request.FILES, instance=updateItem)
+        if form.is_valid():
+            form.save()
+            return redirect('food:index')
+    else:
+        form = ItemForm(instance=updateItem)
 
-    if form.is_valid():
-        form.save()
-        return redirect('food:index')
-    return render(request, "food/item-form.html", {'form': form, 'item': updateItem})
+    return render(request, 'food/item-form.html', {'form': form, 'item': updateItem})
 
 
 def delete_item(request, delete_id):
@@ -51,3 +61,41 @@ def delete_item(request, delete_id):
 
         return redirect("food:index")
     return render(request, "food/item-delete.html", {"item": deleteItem})
+
+
+def register_request(request):
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Registration successful.")
+            return redirect("food:index")
+        messages.error(request, "Unsuccessful registration. Invalid information.")
+    form = NewUserForm()
+    return render(request=request, template_name="food/register.html", context={"register_form": form})
+
+
+def login_request(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}.")
+                return redirect("food:index")
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    form = AuthenticationForm()
+    return render(request=request, template_name="food/login.html", context={"login_form": form})
+
+
+def logout_request(request):
+    logout(request)
+    messages.info(request, "You have successfully logged out.")
+    return redirect("food:index")

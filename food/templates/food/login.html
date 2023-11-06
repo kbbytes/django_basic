@@ -1,0 +1,17 @@
+{% extends "food/base.html" %}
+{% load crispy_forms_filters %}
+{% block body %}
+{% load crispy_forms_tags %}
+<div class="form-wrap">
+    <div class="tabs-content">
+        <div id="login-tab-content" class="active">
+            <form class="login-form" action="" method="post">
+                {% csrf_token %}
+                {{ login_form|crispy }}
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+</div><!--.form-wrap-->
+
+{% endblock %}
